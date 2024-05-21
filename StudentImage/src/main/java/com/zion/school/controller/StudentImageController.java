@@ -15,7 +15,7 @@ import java.util.Optional;
  * Created by Lenovo on 20-05-2024.
  */
 @RestController
-@RequestMapping(value = "studentImage")
+@RequestMapping(value = "/studentImage")
 public class StudentImageController {
 
 
