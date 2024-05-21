@@ -40,9 +40,8 @@ public class StudentServiceImpl implements StudentService{
     public boolean update(Long id,Student student) {
         Optional<Student> optionalCompanie = studentRepository.findById(id);
         if (optionalCompanie.isPresent()) {
-            Student student1 = new Student();
-            student1.setFirstName(student.getFirstName());
-            student1.setLastName(student.getLastName());
+            Student student1 = updateDate(student);
+            student1.setId(id);
             studentRepository.save(student1);
             return true;
         }
@@ -60,6 +59,35 @@ public class StudentServiceImpl implements StudentService{
 //            throw new SchoolException(message);
 //        }
 
+    }
+
+    public Student updateDate(Student student){
+        Student student1 = new Student();
+        student1.setRegistrationId(student.getRegistrationId());
+        student1.setFirstName(student.getFirstName());
+        student1.setLastName(student.getLastName());
+        student1.setFatherName(student.getFatherName());
+        student1.setMotherName(student.getMotherName());
+        student1.setMobileNumber(student.getMobileNumber());
+        student1.setPresentAddress(student.getPresentAddress());
+        student1.setPermanentAddress(student.getPermanentAddress());
+        student1.setSamagraId(student.getSamagraId());
+        student1.setDateOfAdmission(student.getDateOfAdmission());
+        student1.setClassToJoin(student.getClassToJoin());
+        student1.setGender(student.getGender());
+        student1.setDateOfBirth(student.getDateOfBirth());
+        student1.setMarksOfIdentification(student.getMarksOfIdentification());
+        student1.setReligion(student.getReligion());
+        student1.setCaste(student.getCaste());
+        student1.setCastId(student.getCastId());
+        student1.setAadharNumber(student.getAadharNumber());
+        student1.setBankAccountNumber(student.getBankAccountNumber());
+        student1.setIfscCode(student.getIfscCode());
+        student1.setChildHandicapped(student.getChildHandicapped());
+        student1.setFatherMotherExpired(student.getFatherMotherExpired());
+        student1.setSiblings(student.getSiblings());
+        student1.setRteStudent(student1.getRteStudent());
+        return student1;
     }
 
     @Override
