@@ -1,5 +1,6 @@
 package com.zion.school.controller;
 
+import com.zion.school.dto.StudentDTO;
 import com.zion.school.model.Student;
 import com.zion.school.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +28,8 @@ public class StudentController {
     }
 
     @GetMapping(value = "/all")
-    public ResponseEntity<List<Student>>getAllStudents() {
-        List<Student> students = studentService.getAll();
+    public ResponseEntity<List<StudentDTO>> getAllStudents() {
+        List<StudentDTO> students = studentService.getAll();
         return new ResponseEntity<>(students, HttpStatus.OK);
     }
 
@@ -45,14 +46,14 @@ public class StudentController {
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<Student> getStudentById(@PathVariable("id") Long id) {
-        Student student= studentService.get(id);
-        return new ResponseEntity<>(student,HttpStatus.OK);
+        Student student = studentService.get(id);
+        return new ResponseEntity<>(student, HttpStatus.OK);
     }
 
     @PutMapping(value = "/{id}")
 //    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> update(@PathVariable("id") Long id, @RequestBody Student student) {
-        boolean res = studentService.update(id,student);
+        boolean res = studentService.update(id, student);
         if (res) {
             return new ResponseEntity<>("Student Successfully updated", HttpStatus.OK);
         }

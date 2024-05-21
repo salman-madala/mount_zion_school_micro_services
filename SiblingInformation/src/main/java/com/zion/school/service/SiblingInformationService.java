@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface SiblingInformationService {
 
-    List<SiblingInformation> getAll();
+    List<SiblingInformation> getAll(Long studentId);
 
-    boolean create(SiblingInformation siblingInformation);
+    boolean create(Long studentId,List<SiblingInformation> siblingsInformation);
 
     boolean delete(Long id);
 

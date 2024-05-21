@@ -19,13 +19,16 @@ public class SiblingInformationServiceImpl implements SiblingInformationService 
 
 
 
-    public List<SiblingInformation> getAll() {
-        return siblingInformationRepo.findAll();
+    public List<SiblingInformation> getAll(Long studentId) {
+        return siblingInformationRepo.getAllByStudentId(studentId);
     }
 
-    public boolean create(SiblingInformation siblingInformation) {
+    public boolean create(Long studentId,List<SiblingInformation> siblingsInformation) {
         try {
-            siblingInformationRepo.save(siblingInformation);
+            siblingsInformation.forEach(siblingInformation -> {
+                siblingInformation.setStudentId(studentId);
+                siblingInformationRepo.save(siblingInformation);
+            });
             return true;
         } catch (Exception e) {
             return false;

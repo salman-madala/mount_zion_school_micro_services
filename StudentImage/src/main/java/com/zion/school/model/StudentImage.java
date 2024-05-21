@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @Entity
 public class StudentImage {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "name")
@@ -29,4 +28,5 @@ public class StudentImage {
         this.type = type;
         this.picByte = picByte;
     }
+
 }

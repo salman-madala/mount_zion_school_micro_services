@@ -1,23 +1,34 @@
 package com.zion.school.service;
 
+import com.zion.school.clients.SiblingInformationClient;
+import com.zion.school.clients.StudentImageClient;
+import com.zion.school.dto.StudentDTO;
+import com.zion.school.model.SiblingInformation;
 import com.zion.school.model.Student;
 import com.zion.school.model.StudentImage;
 import com.zion.school.repo.StudentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
-public class StudentServiceImpl implements StudentService{
+public class StudentServiceImpl implements StudentService {
 
     StudentRepository studentRepository;
+    SiblingInformationClient siblingInformationClient;
+    StudentImageClient studentImageClient;
 
-
-    public StudentServiceImpl(final StudentRepository studentRepository) {
+    public StudentServiceImpl(StudentRepository studentRepository, SiblingInformationClient siblingInformationClient, StudentImageClient studentImageClient) {
         this.studentRepository = studentRepository;
+        this.siblingInformationClient = siblingInformationClient;
+        this.studentImageClient = studentImageClient;
     }
+
 
     @Override
     public boolean create(Student student) throws Exception {
@@ -37,7 +48,7 @@ public class StudentServiceImpl implements StudentService{
     }
 
     @Override
-    public boolean update(Long id,Student student) {
+    public boolean update(Long id, Student student) {
         Optional<Student> optionalCompanie = studentRepository.findById(id);
         if (optionalCompanie.isPresent()) {
             Student student1 = updateDate(student);
@@ -61,7 +72,7 @@ public class StudentServiceImpl implements StudentService{
 
     }
 
-    public Student updateDate(Student student){
+    public Student updateDate(Student student) {
         Student student1 = new Student();
         student1.setRegistrationId(student.getRegistrationId());
         student1.setFirstName(student.getFirstName());
@@ -92,12 +103,11 @@ public class StudentServiceImpl implements StudentService{
 
     @Override
     public boolean delete(long id) {
-//        Optional<StudentImage> stuImage = studentImageRepo.findById(id);
-//        if (stuImage.isPresent()) {
-//            studentImageRepo.deleteById(id);
-//        }
-
-        if(studentRepository.existsById(id)) {
+        if (studentRepository.existsById(id)) {
+            Optional<StudentImage> stuImage = studentImageClient.getStudentImage(id);
+            if (stuImage.isPresent()) {
+                studentImageClient.deleteStudentImage(id);
+            }
             studentRepository.deleteById(id);
             return true;
         } else {
@@ -108,8 +118,22 @@ public class StudentServiceImpl implements StudentService{
     }
 
     @Override
-    public List<Student> getAll() {
-        return studentRepository.findAllByOrderByRegistrationIdAsc();
+    public List<StudentDTO> getAll() {
+        List<StudentDTO> studentDTOS = new ArrayList<>();
+        try {
+            List<Student> students = studentRepository.findAllByOrderByRegistrationIdAsc();
+            students.forEach(student -> {
+                StudentDTO studentDTO = new StudentDTO();
+                studentDTO.setStudent(student);
+                studentDTO.setSiblingInformation(siblingInformationClient.siblingsInformation(student.getId()));
+                studentDTO.setStudentImage(studentImageClient.getStudentImage(student.getId()).orElse(null));
+                studentDTOS.add(studentDTO);
+            });
+            return studentDTOS;
+        } catch (Exception e) {
+            System.out.println(e);
+            return studentDTOS;
+        }
     }
 
     @Override
@@ -149,6 +173,7 @@ public class StudentServiceImpl implements StudentService{
 
         return students;
     }
+
     @Override
     public Integer getClassStudentsCount(String className) {
         return studentRepository.findByClassToJoinAndRteStudentFalseOrderByRegistrationIdAsc(className).size();

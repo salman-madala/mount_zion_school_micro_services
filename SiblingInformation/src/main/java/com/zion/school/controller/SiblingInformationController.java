@@ -18,14 +18,14 @@ public class SiblingInformationController {
     SiblingInformationService siblingInformationService;
 
     @GetMapping
-    public ResponseEntity<List<SiblingInformation>> getAll() {
-        List<SiblingInformation> companies = siblingInformationService.getAll();
-        return new ResponseEntity<>(companies, HttpStatus.OK);
+    public ResponseEntity<List<SiblingInformation>> getAll(@RequestParam Long studentId) {
+        List<SiblingInformation> siblingInformations = siblingInformationService.getAll(studentId);
+        return new ResponseEntity<>(siblingInformations, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody SiblingInformation siblingInformation) {
-        boolean res = siblingInformationService.create(siblingInformation);
+    public ResponseEntity<String> create(@RequestParam Long studentId,@RequestBody List<SiblingInformation> siblingsInformation) {
+        boolean res = siblingInformationService.create(studentId,siblingsInformation);
         if (res)
             return new ResponseEntity<>("SiblingInformation created successfully", HttpStatus.CREATED);
         return new ResponseEntity<>("SiblingInformation created failure", HttpStatus.NOT_FOUND);
