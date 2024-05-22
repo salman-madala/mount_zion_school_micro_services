@@ -4,6 +4,7 @@ import com.zion.school.model.SiblingInformation;
 import com.zion.school.repo.SiblingInformationRepo;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +21,13 @@ public class SiblingInformationServiceImpl implements SiblingInformationService 
 
 
     public List<SiblingInformation> getAll(Long studentId) {
-        return siblingInformationRepo.getAllByStudentId(studentId);
+        List<SiblingInformation> siblingInformations = new ArrayList<>();
+        try {
+            siblingInformations= siblingInformationRepo.getAllByStudentId(studentId);
+        }catch (Exception e){
+            return siblingInformations;
+        }
+     return siblingInformations;
     }
 
     public boolean create(Long studentId,List<SiblingInformation> siblingsInformation) {
