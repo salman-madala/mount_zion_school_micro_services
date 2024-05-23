@@ -1,11 +1,12 @@
 package com.zion.school.service;
 
+import com.zion.school.helper.ImageHelper;
 import com.zion.school.model.StudentImage;
 import com.zion.school.repo.StudentImageRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -14,14 +15,29 @@ public class StudentImageServiceImpl implements StudentImageService {
     @Autowired
     private StudentImageRepo studentImageRepo;
 
-    public StudentImage uploadImage(StudentImage studentImage){
-        StudentImage student1 = studentImageRepo.save(studentImage);
-        return student1;
+    public StudentImage uploadImage(StudentImage studentImage) throws IOException {
+        StudentImage img2 = null;
+        Optional<StudentImage> studentImage1 = studentImageRepo.findById(studentImage.getId());
+        if (studentImage1.isPresent()) {
+            System.out.println("Original Image Byte Size - " + studentImage.getPicByte().length);
+            StudentImage img = new StudentImage(studentImage.getName(), studentImage.getType(),
+                    ImageHelper.compressBytes(studentImage.getPicByte()));
+            img.setId(studentImage.getId());
+            StudentImage img1 = studentImageRepo.save(img);
+
+            img2 = new StudentImage(img1.getId(), img1.getName(), img1.getType(),
+                    ImageHelper.decompressBytes(img1.getPicByte()));
+        }else{
+            return null;
+        }
+        return img2;
     }
-    public StudentImage updateImage(StudentImage studentImage){
+
+    public StudentImage updateImage(StudentImage studentImage) {
         return studentImageRepo.save(studentImage);
     }
-    public void deleteImage(Long id){
+
+    public void deleteImage(Long id) {
         studentImageRepo.deleteById(id);
     }
 

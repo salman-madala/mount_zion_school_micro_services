@@ -23,7 +23,7 @@ public class RabbitMQConfiguration {
 
     @Bean
     RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory){
-        RabbitTemplate template = new RabbitTemplate();
+        RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());
         return template;
     }

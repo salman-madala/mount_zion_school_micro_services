@@ -6,6 +6,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
 @Service
 public class StudentImageConsumer {
 
@@ -13,7 +15,7 @@ public class StudentImageConsumer {
     StudentImageService studentImageService;
 
     @RabbitListener(queues = "studentImageUploadQueue")
-    public void getStudentImageUpload(StudentImage StudentImage){
-        studentImageService.uploadImage(StudentImage);
+    public void getStudentImageUpload(StudentImage studentImage) throws IOException {
+        studentImageService.uploadImage(studentImage);
     }
 }

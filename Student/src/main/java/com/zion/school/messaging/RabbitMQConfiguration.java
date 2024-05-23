@@ -17,13 +17,18 @@ public class RabbitMQConfiguration {
     }
 
     @Bean
+    Queue queue1(){
+        return new Queue("studentImageUploadQueue1");
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
     @Bean
-    RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory){
-        RabbitTemplate template = new RabbitTemplate();
+    public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory){
+        RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());
         return template;
     }

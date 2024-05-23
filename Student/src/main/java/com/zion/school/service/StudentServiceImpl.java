@@ -3,18 +3,17 @@ package com.zion.school.service;
 import com.zion.school.clients.SiblingInformationClient;
 import com.zion.school.clients.StudentImageClient;
 import com.zion.school.dto.StudentDTO;
-import com.zion.school.model.SiblingInformation;
+import com.zion.school.messaging.StudentImageUploadProducer;
 import com.zion.school.model.Student;
 import com.zion.school.model.StudentImage;
 import com.zion.school.repo.StudentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -22,16 +21,18 @@ public class StudentServiceImpl implements StudentService {
     StudentRepository studentRepository;
     SiblingInformationClient siblingInformationClient;
     StudentImageClient studentImageClient;
+    StudentImageUploadProducer studentImageUploadProducer;
 
-    public StudentServiceImpl(StudentRepository studentRepository, SiblingInformationClient siblingInformationClient, StudentImageClient studentImageClient) {
+    public StudentServiceImpl(StudentRepository studentRepository, SiblingInformationClient siblingInformationClient, StudentImageClient studentImageClient, StudentImageUploadProducer studentImageUploadProducer) {
         this.studentRepository = studentRepository;
         this.siblingInformationClient = siblingInformationClient;
         this.studentImageClient = studentImageClient;
+        this.studentImageUploadProducer = studentImageUploadProducer;
     }
 
 
     @Override
-    public boolean create(Student student) throws Exception {
+    public boolean create(Student student, MultipartFile file) throws Exception {
         String result;
         Optional<Student> existStudent = studentRepository.findByRegistrationId(student.getRegistrationId());
         if (existStudent.isPresent()) {
@@ -39,12 +40,13 @@ public class StudentServiceImpl implements StudentService {
             throw new Exception(result);
         }
         try {
-            studentRepository.save(student);
+            Student savedStudent = studentRepository.save(student);
+            if(savedStudent.getId() != null)
+                studentImageUploadProducer.sendStudentImageUploadMessage(savedStudent, file);
             return true;
         } catch (Exception e) {
             return false;
         }
-
     }
 
     @Override
