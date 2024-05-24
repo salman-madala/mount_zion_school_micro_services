@@ -1,7 +1,9 @@
 package com.zion.school.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zion.school.dto.StudentDTO;
+import com.zion.school.model.SiblingInformation;
 import com.zion.school.model.Student;
 import com.zion.school.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -24,9 +27,10 @@ public class StudentController {
 
     @PostMapping(value = "/new",consumes = "multipart/form-data")
 //    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> create(@RequestParam("student") String student,@RequestParam("imageFile") MultipartFile file) throws Exception {
+    public ResponseEntity<String> create(@RequestParam("student") String student, @RequestParam("siblingInformation") String siblingInformation, @RequestParam("imageFile") MultipartFile file) throws Exception {
         Student studentObj = objectMapper.readValue(student, Student.class);
-        boolean res = studentService.create(studentObj,file);
+        List<SiblingInformation> studentInfomation = objectMapper.readValue(siblingInformation, new TypeReference<List<SiblingInformation>>(){});
+        boolean res = studentService.create(studentObj,studentInfomation,file);
         if (res)
             return new ResponseEntity<>("Student created successfully", HttpStatus.CREATED);
         return new ResponseEntity<>("Student created failure", HttpStatus.NOT_FOUND);

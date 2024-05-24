@@ -4,6 +4,7 @@ import com.zion.school.clients.SiblingInformationClient;
 import com.zion.school.clients.StudentImageClient;
 import com.zion.school.dto.StudentDTO;
 import com.zion.school.messaging.StudentImageUploadProducer;
+import com.zion.school.model.SiblingInformation;
 import com.zion.school.model.Student;
 import com.zion.school.model.StudentImage;
 import com.zion.school.repo.StudentRepository;
@@ -32,7 +33,7 @@ public class StudentServiceImpl implements StudentService {
 
 
     @Override
-    public boolean create(Student student, MultipartFile file) throws Exception {
+    public boolean create(Student student, List<SiblingInformation> siblingInformation, MultipartFile file) throws Exception {
         String result;
         Optional<Student> existStudent = studentRepository.findByRegistrationId(student.getRegistrationId());
         if (existStudent.isPresent()) {
@@ -41,8 +42,10 @@ public class StudentServiceImpl implements StudentService {
         }
         try {
             Student savedStudent = studentRepository.save(student);
-            if(savedStudent.getId() != null)
+            if(savedStudent.getId() != null && !file.isEmpty())
                 studentImageUploadProducer.sendStudentImageUploadMessage(savedStudent, file);
+            if(savedStudent.getId() != null && siblingInformation.size()>0)
+                studentImageUploadProducer.sendStudentSiblingInformationMessage(savedStudent.getId(), siblingInformation);
             return true;
         } catch (Exception e) {
             return false;

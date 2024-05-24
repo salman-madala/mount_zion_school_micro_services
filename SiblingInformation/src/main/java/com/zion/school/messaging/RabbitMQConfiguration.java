@@ -13,11 +13,6 @@ public class RabbitMQConfiguration {
 
     @Bean
     Queue queue(){
-        return new Queue("studentImageUploadQueue");
-    }
-
-    @Bean
-    Queue createStudentSiblingInformationQueue(){
         return new Queue("createStudentSiblingInformationQueue");
     }
 
@@ -27,7 +22,7 @@ public class RabbitMQConfiguration {
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory){
+    RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory){
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());
         return template;
