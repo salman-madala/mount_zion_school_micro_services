@@ -1,7 +1,13 @@
 package com.emabarkx.gateway.config;
 
+import com.emabarkx.gateway.jwt.AuthEntryPointJwt;
+import com.emabarkx.gateway.jwt.AuthTokenFilter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -15,32 +21,42 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.sql.DataSource;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+    @Autowired
     DataSource dataSource;
 
-    public SecurityConfig(final DataSource dataSource) {
-        this.dataSource = dataSource;
+    @Autowired
+    AuthEntryPointJwt unAuthorizedHandler;
+
+    @Bean
+    AuthTokenFilter authenticationJwtTokenFilter() {
+        return new AuthTokenFilter();
     }
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((requests) ->
                 requests.requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/auth/signin").permitAll()
                         .requestMatchers("/eureka/**").permitAll()
                         .anyRequest().authenticated());
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.exceptionHandling(exception -> exception.authenticationEntryPoint(unAuthorizedHandler));
+
         //http.formLogin(withDefaults());
-        http.httpBasic(withDefaults());
+//        http.httpBasic(withDefaults());
         http.csrf(AbstractHttpConfigurer::disable);
         http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
+
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
@@ -54,17 +70,33 @@ public class SecurityConfig {
 //          return new InMemoryUserDetailsManager(admin,user);
 
         /* -----------using h2 database--------*/
-
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
         JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
-        UserDetails admin = User.withUsername("admin").password(passwordEncoder.encode("admin")).roles("ADMIN").build();
-//        UserDetails user = User.withUsername("user").password(passwordEncoder.encode( "user")).roles("USER").build();
-//        jdbcUserDetailsManager.createUser(admin);
-//        jdbcUserDetailsManager.createUser(user);
-
         return jdbcUserDetailsManager;
     }
 
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public CommandLineRunner initData(UserDetailsService userDetailsService) {
+        return args -> {
+            JdbcUserDetailsManager manager = (JdbcUserDetailsManager) userDetailsService;
+
+            UserDetails admin = User.withUsername("admin").password(passwordEncoder().encode("admin")).roles("ADMIN").build();
+            UserDetails user = User.withUsername("user").password(passwordEncoder().encode("user")).roles("USER").build();
+
+            JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
+            jdbcUserDetailsManager.createUser(admin);
+            jdbcUserDetailsManager.createUser(user);
+        };
+    }
+
+
+    @Bean
+    AuthenticationManager authenticationManager(AuthenticationConfiguration builder) throws Exception {
+        return builder.getAuthenticationManager();
+    }
 
 }
